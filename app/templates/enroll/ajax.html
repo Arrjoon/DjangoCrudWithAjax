@@ -1,0 +1,70 @@
+<script>
+    $("#btnsave").click(function () {
+        output = "";
+        console.log("Save Button clicked");
+        let nm = $("#nameid").val();
+        let em = $("#emailid").val();
+        let pas = $("#passwordid").val();
+        let csrf = $("input[name=csrfmiddlewaretoken]").val();
+        if (nm == "") {
+            console.log("Please enter name")
+        } else if (em == "") {
+            console.log("Enter the email");
+        }
+        else if (pas == "") {
+            console.log("Enter you password");
+        }
+        else {
+            mydata = { name: nm, email: em, password: pas, csrfmiddlewaretoken: csrf }
+            // console.log(nm);
+            // console.log(em);
+            // console.log(pas);
+
+            $.ajax({
+                url: "{% url 'save' %}",
+                method: "POST",
+                data: mydata,
+                success: function (data) {
+                    x = data.student_data;
+                    if (data.status == 'save') {
+                        for (i = 0; i < x.length; i++) {
+                            output += "<tr><td>" + x[i].id + "</td><td>" + x[i].name + "</td><td>" + x[i].email + "</td><td>" + x[i].password + "</td><td><input type='button' data-sid=" + x[i].id + "class='btn btn-sm btn-warning btn-edit' value='Edit'> <input type='button' data-sid=" + x[i].id + "class='btn btn-sm btn-danger btn-del' value='Delete'>"
+                        }
+                        $("tbody").html = output
+                        $("form")[0].reset();
+                    }
+                    if (data.status == 0) {
+                        console.log("From can't be submitted")
+                    }
+                },
+            })
+        }
+    })
+
+
+    //Delete Data 
+    $("tbody").on('click', ".btn-del", function () {
+        let id = $(this).attr("data-sid")
+        let csrf = $("input[name=csrfmiddlewaretoken]").val();
+
+        mydata = { sid: id, csrfmiddlewaretoken: csrf }
+        mythis = this
+        $.ajax({
+            url: "{% url 'delete' %}",
+            method: "POST",
+            data: mydata,
+            success: function (data) {
+                if (data.status == 1) {
+                    console.log("Data deleted successupll")
+                    $(mythis).closest("tr").fadeOut();
+                }
+                if (data.status == 0) {
+                    console.log("Error Occurs")
+
+                }
+            },
+        })
+
+    })
+    //Editing data in Ajax
+</script>
